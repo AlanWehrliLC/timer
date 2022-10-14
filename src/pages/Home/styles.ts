@@ -92,6 +92,7 @@ export const StartCountdownContainer = styled.button`
     border: 0;
     padding: 1rem;
     border-radius: 8px;
+    display: flex;
     align-items: center;
     justify-content: center;
 
