@@ -1,5 +1,4 @@
 import { HandPalm, Play } from "phosphor-react"
-import { createContext, useEffect, useState } from "react"
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as zod from "zod"
@@ -13,27 +12,8 @@ import {
 
 import { NewCycleForm } from "./components/NewCycleForm"
 import { Countdown } from "./components/Countdown"
-
-
-interface Cycle {
-    id: string
-    task: string
-    minutesAmount: number
-    startDate: Date
-    interruptedDate?: Date
-    finishedDate?: Date
-}
-
-interface CycleContextType {
-    activeCycle: Cycle | undefined
-    activeCycleId: string | null
-    amountSecondsPassed: number
-    markCurrentCycleAsFinished: () => void
-    handleInterruptCycle: () => void
-    setSecondsPassed: (seconds: number) => void
-}
-
-export const CycleContext = createContext({} as CycleContextType)
+import { CycleContext } from "../../contexts/CyclesContext";
+import { useContext } from "react";
 
 const newCycleFormValidationSchema = zod.object({
     task: zod.string().min(1, "Report the task"),
@@ -46,9 +26,11 @@ const newCycleFormValidationSchema = zod.object({
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
 
 export function Home(){
-    const [cycles, setCycles] = useState<Cycle[]>([])
-    const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
-    const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+    const { 
+        activeCycle, 
+        interruptCurrentCycle,
+        createNewCycle
+    } = useContext(CycleContext)
 
     const newCycleForm = useForm<NewCycleFormData>({
         resolver: zodResolver(newCycleFormValidationSchema),
@@ -60,53 +42,9 @@ export function Home(){
 
     const { handleSubmit, watch, reset } = newCycleForm
 
-    const activeCycle = cycles.find(cycle => cycle.id == activeCycleId)
-
-    function setSecondsPassed(seconds: number){
-        setAmountSecondsPassed(seconds)
-    }
-
-    function markCurrentCycleAsFinished(){
-        setCycles(oldState => oldState.map(state => {
-            if (state.id === activeCycleId) {
-                return {...state, finishedDate: new Date()}
-            }else{
-                return state
-            }
-        })
-    )
-    }
-
     function handleCreateNewCycle(data: NewCycleFormData){
-        const id = String(new Date().getTime())
-
-        const newCycle: Cycle = {
-            id,
-            task: data.task,
-            minutesAmount: data.minutesAmount,
-            startDate: new Date()
-
-        }
-
-        setCycles((oldState) => [...oldState, newCycle])
-        setActiveCycleId(id)
-        setAmountSecondsPassed(0)
-
+        createNewCycle(data)
         reset()
-    }
-
-    function handleInterruptCycle(){
-
-        setCycles(oldState => oldState.map(state => {
-                if (state.id === activeCycleId) {
-                    return {...state, interruptedDate: new Date()}
-                }else{
-                    return state
-                }
-            })
-        )
-
-        setActiveCycleId(null)
     }
 
     const task = watch("task")
@@ -116,22 +54,13 @@ export function Home(){
         <HomeContainer>
             <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
 
-            <CycleContext.Provider value={{
-                activeCycle, 
-                activeCycleId, 
-                amountSecondsPassed,
-                markCurrentCycleAsFinished,
-                handleInterruptCycle,
-                setSecondsPassed
-                }}>
                 <FormProvider {...newCycleForm}>
                     <NewCycleForm />
                 </FormProvider>
                 <Countdown />
-            </CycleContext.Provider>
 
             {activeCycle ? (
-                <StopCountdownContainer onClick={handleInterruptCycle} type="button" >
+                <StopCountdownContainer onClick={interruptCurrentCycle} type="button" >
                     <HandPalm size={24} />
                     Stop
                 </StopCountdownContainer>

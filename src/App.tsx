@@ -4,6 +4,7 @@ import { Router } from "./Router"
 
 import { GolbalStyle } from "./styles/global"
 import { defaultTheme } from "./styles/themes/default"
+import { CycleContextProvider } from "./contexts/CyclesContext"
 
 export function App() {
 
@@ -13,7 +14,9 @@ export function App() {
       <ThemeProvider theme={defaultTheme}>
         <GolbalStyle />
         
-        <Router />
+        <CycleContextProvider>
+          <Router />
+        </CycleContextProvider>
       </ThemeProvider>
 
     </BrowserRouter>
