@@ -21,9 +21,6 @@ export function NewCycleForm(){
             />
 
             <datalist id="task-suggestions">
-                <option value="feed" />
-                <option value="Im Here" />
-                <option value="Timer" />
             </datalist> 
 
             <label htmlFor="minutesAmount">during</label>
