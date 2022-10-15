@@ -34,6 +34,14 @@ export function Countdown(){
         let interval: number
 
         if(activeCycle){
+            const newAudioContext = new AudioContext()
+            const oscillator = newAudioContext.createOscillator()
+
+            oscillator.frequency.value = 293.7
+            oscillator.connect(newAudioContext.destination)
+            
+
+
             interval = setInterval(() => {
                 const secondsDifference = differenceInSeconds(
                     new Date(), 
@@ -47,6 +55,8 @@ export function Countdown(){
                     clearInterval(interval)
                     interruptCurrentCycle()
                     document.title = `Timer`
+                    oscillator.start()
+                    setTimeout(()=>{oscillator.stop()}, 100)
                 }else{
                     setSecondsPassed(secondsDifference)
                 }
